@@ -113,7 +113,7 @@ const HomePage = () => {
       <section className="max-w-7xl mx-auto px-6 sm:px-10 py-20 bg-gray-50 rounded-xl shadow-inner" id="about">
         <h2 className="text-4xl font-bold text-blue-600 mb-6 text-center">About Us</h2>
         <p className="text-lg text-gray-700 leading-relaxed max-w-4xl mx-auto text-center">
-          SRM Hospitals is a leader in modern healthcare, backed by expert professionals and state-of-the-art facilities.
+          Medico Hospitals is a leader in modern healthcare, backed by expert professionals and state-of-the-art facilities.
           Our mission is to bridge the gap between patients and care by making healthcare smarter and more accessible.
           <br /><br />
           With our online appointment system, we bring efficiency, convenience, and innovation to your fingertips.
@@ -124,16 +124,13 @@ const HomePage = () => {
       <section className="max-w-7xl mx-auto px-6 sm:px-10 py-20" id="contact">
         <h2 className="text-4xl font-bold text-blue-600 mb-6 text-center">Contact Information</h2>
         <div className="text-lg text-gray-700 text-center">
-          <p className="mb-2">👨‍💻 <strong>Team Members</strong></p>
+          <p className="mb-2">👨‍💻 <strong>Contact Us</strong></p>
           <ul className="mb-4 space-y-1">
-            <li>A. Sudheesh (AP22110011083)</li>
-            <li>Kaja Jaya Sankar Saketh (AP22110011083)</li>
-            <li>K. Saritha (AP22110011110)</li>
-            <li>N. Janani (AP22110011102)</li>
+            <li>mail:Medico @gmail.com </li>
+            <li>phone:+91 8075563382 </li>
+            
           </ul>
-          <p className="text-sm text-gray-500 mt-6 italic">
-            This system is developed as part of an academic project at SRM Institute of Science and Technology.
-          </p>
+          
         </div>
       </section>
 

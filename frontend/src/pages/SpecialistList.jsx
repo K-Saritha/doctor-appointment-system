@@ -35,12 +35,6 @@ const SpecialistList = () => {
   const [selectedSlots, setSelectedSlots] = useState({});
   const [bookingInProgress, setBookingInProgress] = useState(false);
 
-  useEffect(() => {
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-  }, [token, navigate]);
 
   const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
@@ -76,42 +70,32 @@ const SpecialistList = () => {
 
   // Get available time slots for a doctor based on the selected date
   const getAvailableTimeSlots = (doctor) => {
-    if (!doctor.time_slots || !Array.isArray(doctor.time_slots)) return [];
+    if (!doctor.time_slots) return [];
   
     const today = new Date();
     const selected = new Date(selectedDate);
   
-    // Don't show any slots if selected date is in the past
-    if (selected < new Date(today.toDateString())) return [];
+    // Return empty if selected date is in the past
+    if (selected < today.setHours(0, 0, 0, 0)) return [];
   
-    const timeSlotForDate = doctor.time_slots.find(
-      (slot) => slot.date === selectedDate
-    );
-  
-    if (!timeSlotForDate || !timeSlotForDate.slots) return [];
+    const timeSlotForDate = doctor.time_slots.find(slot => slot.date === selectedDate);
+    if (!timeSlotForDate) return [];
   
     return timeSlotForDate.slots
       .filter((slot) => {
         if (slot.status !== 'free') return false;
   
-        // If the selected date is today, remove past time slots
-        if (selected.toDateString() === today.toDateString()) {
-          // Extract just the start time (assuming format like "17:00 - 17:15")
-          const startTime = slot.time.split(" - ")[0];
-          const [hour, minute] = startTime.split(":").map(Number);
-          
-          const slotDateTime = new Date(selected);
-          slotDateTime.setHours(hour, minute, 0, 0);
+        const startTime = slot.time.split(" - ")[0];
+        const [hour, minute] = startTime.split(":").map(Number);
   
-          return slotDateTime > today;
-        }
+        const slotDateTime = new Date(selected);
+        slotDateTime.setHours(hour, minute, 0, 0);
   
-        return true;
+        return selectedDate > today || slotDateTime > today;
       })
       .map((slot) => slot.time);
   };
   
-
   const bookDoctor = (doctor) => {
     const selectedTimeSlot = selectedSlots[doctor._id];
     

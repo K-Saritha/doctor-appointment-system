@@ -3,7 +3,7 @@ import axios from "axios";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:5000"; 
+const API_BASE_URL = "http://localhost:5000";
 
 const PatientAppointments = () => {
   const navigate = useNavigate();
@@ -21,7 +21,9 @@ const PatientAppointments = () => {
       try {
         const token = localStorage.getItem("token");
         const storedPatient = localStorage.getItem("patient");
-        let localPatientId = storedPatient ? JSON.parse(storedPatient)._id : null;
+        let localPatientId = storedPatient
+          ? JSON.parse(storedPatient)._id
+          : null;
 
         if (!token) {
           console.warn("🔴 No token found. Redirecting to login...");
@@ -34,14 +36,17 @@ const PatientAppointments = () => {
         // If localStorage doesn't have patientId, fetch from profile API
         if (!localPatientId) {
           console.log("🔍 Fetching patient profile...");
-          const profileRes = await axios.get(`${API_BASE_URL}/api/patients/profile`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const profileRes = await axios.get(
+            `${API_BASE_URL}/api/patients/profile`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
           localPatientId = profileRes.data._id;
           localStorage.setItem("patient", JSON.stringify(profileRes.data));
 
           localPatientId = profileRes.data._id;
-          setPatientEmail(profileRes.data.email); 
+          setPatientEmail(profileRes.data.email);
           localStorage.setItem("patient", JSON.stringify(profileRes.data));
         }
         if (storedPatient) {
@@ -49,26 +54,34 @@ const PatientAppointments = () => {
           localPatientId = patientObj._id;
           setPatientEmail(patientObj.email); // ⬅️ Set email from localStorage
         }
-        
+
         setPatientId(localPatientId); // Store in state
         console.log("🟢 Patient ID:", localPatientId);
 
         // Fetch appointments using stored patientId
-        const response = await axios.get(`${API_BASE_URL}/api/appointments/${localPatientId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(
+          `${API_BASE_URL}/api/appointments/${localPatientId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         console.log("🟢 API Response Data:", response.data);
-        
+
         if (response.data.length === 0) {
           setError("No appointments found.");
         } else {
           setAppointments(response.data);
         }
-
       } catch (err) {
-        console.error("🔴 API Fetch Error:", err.response?.data?.message || err.message);
-        setError(err.response?.data?.message || "Failed to load appointments. Please log in again.");
+        console.error(
+          "🔴 API Fetch Error:",
+          err.response?.data?.message || err.message
+        );
+        setError(
+          err.response?.data?.message ||
+            "Failed to load appointments. Please log in again."
+        );
       } finally {
         setLoading(false);
       }
@@ -87,20 +100,20 @@ const PatientAppointments = () => {
 
   const confirmCancelAppointment = async () => {
     if (!appointmentToCancel) return;
-  
+
     setCancelLoading(true);
     try {
       const token = localStorage.getItem("token");
-  
+
       // Call unified cancellation endpoint (updates both appointment + doctor DB)
       const cancelRes = await axios.put(
         `${API_BASE_URL}/api/appointments/${appointmentToCancel._id}/cancel`,
         { doctorId: appointmentToCancel.doctor_id }, // Send doctorId too
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  
+
       console.log("✅ Cancellation response:", cancelRes.data);
-  
+
       // Send cancellation email
       await axios.post(`${API_BASE_URL}/api/email/send-cancellation`, {
         patientName: appointmentToCancel.patient_name,
@@ -110,7 +123,7 @@ const PatientAppointments = () => {
         timeSlot: appointmentToCancel.time_slot,
         toEmail: patientEmail,
       });
-  
+
       // Update local appointment state
       setAppointments(
         appointments.map((app) =>
@@ -119,7 +132,7 @@ const PatientAppointments = () => {
             : app
         )
       );
-  
+
       setShowConfirmation(false);
       setAppointmentToCancel(null);
     } catch (err) {
@@ -129,24 +142,30 @@ const PatientAppointments = () => {
       setCancelLoading(false);
     }
   };
-  
-  
 
-  if (loading) return <div className="text-center py-10 text-lg font-medium">Loading...</div>;
-  if (error) return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-      <h2 className="text-2xl font-bold text-gray-700">{error}</h2>
-      <p className="text-gray-500 text-sm mt-2">Please check again later or contact support.</p>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="text-center py-10 text-lg font-medium">Loading...</div>
+    );
+  if (error)
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+        <h2 className="text-2xl font-bold text-gray-700">{error}</h2>
+        <p className="text-gray-500 text-sm mt-2">
+          Please check again later or contact support.
+        </p>
+      </div>
+    );
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const upcomingAppointments = appointments.filter((app) => new Date(app.appointment_date) >= today);
-  const previousAppointments = appointments.filter((app) => new Date(app.appointment_date) < today);
-
-
+  const upcomingAppointments = appointments.filter(
+    (app) => new Date(app.appointment_date) >= today
+  );
+  const previousAppointments = appointments.filter(
+    (app) => new Date(app.appointment_date) < today
+  );
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -158,9 +177,15 @@ const PatientAppointments = () => {
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Cancel Appointment</h3>
             <p className="mb-4">
-              Are you sure you want to cancel your appointment with Dr. {appointmentToCancel?.doctor_name} on{" "}
-              {format(new Date(appointmentToCancel?.appointment_date), "MMM d, yyyy")}
-              {appointmentToCancel?.time_slot && `, ${appointmentToCancel.time_slot}`}?
+              Are you sure you want to cancel your appointment with Dr.{" "}
+              {appointmentToCancel?.doctor_name} on{" "}
+              {format(
+                new Date(appointmentToCancel?.appointment_date),
+                "MMM d, yyyy"
+              )}
+              {appointmentToCancel?.time_slot &&
+                `, ${appointmentToCancel.time_slot}`}
+              ?
             </p>
             <div className="flex justify-end space-x-3">
               <button
@@ -183,18 +208,32 @@ const PatientAppointments = () => {
       )}
 
       <div className="mb-10">
-        <h2 className="text-2xl font-semibold mb-4 text-blue-600">Upcoming Appointments</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-blue-600">
+          Upcoming Appointments
+        </h2>
         {upcomingAppointments.length > 0 ? (
           <ul className="space-y-4">
             {upcomingAppointments.map((app) => (
               <li key={app._id} className="bg-white p-4 rounded-lg shadow-md">
-                <p className="text-lg font-semibold">{app.doctor_name} ({app.specialization})</p>
+                <p className="text-lg font-semibold">
+                  {app.doctor_name} ({app.specialization})
+                </p>
                 <p className="text-gray-600">
                   {format(new Date(app.appointment_date), "MMM d, yyyy")}
-                  {app.time_slot && `, ${app.time_slot.replace(/5:300/g, "5:30")}`}
+                  {app.time_slot &&
+                    `, ${app.time_slot.replace(/5:300/g, "5:30")}`}
                 </p>
                 <div className="flex justify-between items-center mt-2">
-                  <p className={`text-sm font-medium ${app.status === "Confirmed" ? "text-green-600" : "text-red-600"}`}>
+                  <p
+                    className={`text-sm font-medium ${
+                      app.status === "Cancelled"
+                        ? "text-red-600"
+                        : app.status === "Confirmed" ||
+                          app.status === "Completed"
+                        ? "text-green-600"
+                        : ""
+                    }`}
+                  >
                     {app.status}
                   </p>
                   {app.status === "Confirmed" && (
@@ -217,17 +256,28 @@ const PatientAppointments = () => {
       </div>
 
       <div>
-        <h2 className="text-2xl font-semibold mb-4 text-gray-700">Previous Appointments</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+          Previous Appointments
+        </h2>
         {previousAppointments.length > 0 ? (
           <ul className="space-y-4">
             {previousAppointments.map((app) => (
               <li key={app._id} className="bg-white p-4 rounded-lg shadow-md">
-                <p className="text-lg font-semibold">{app.doctor_name} ({app.specialization})</p>
+                <p className="text-lg font-semibold">
+                  {app.doctor_name} ({app.specialization})
+                </p>
                 <p className="text-gray-600">
                   {format(new Date(app.appointment_date), "MMM d, yyyy")}
-                  {app.time_slot && `, ${app.time_slot.replace(/5:300/g, "5:30")}`}
+                  {app.time_slot &&
+                    `, ${app.time_slot.replace(/5:300/g, "5:30")}`}
                 </p>
-                <p className={`text-sm font-medium ${app.status === "Confirmed" || app.status === "Completed" ? "text-green-600" : "text-red-600"}`}>
+                <p
+                  className={`text-sm font-medium ${
+                    app.status === "Confirmed" || app.status === "Completed"
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
                   {app.status}
                 </p>
               </li>
